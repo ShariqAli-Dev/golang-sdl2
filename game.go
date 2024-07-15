@@ -37,7 +37,22 @@ func (g *game) close() {
 }
 
 func (g *game) run() {
-	g.renderer.Clear()
-	g.renderer.Present()
-	sdl.Delay(5000)
+	for {
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch e := event.(type) {
+			case *sdl.QuitEvent:
+				return
+			case *sdl.KeyboardEvent:
+				if e.Type == sdl.KEYDOWN {
+					switch e.Keysym.Scancode {
+					case sdl.SCANCODE_ESCAPE:
+						return
+					}
+				}
+			}
+		}
+		g.renderer.Clear()
+		g.renderer.Present()
+		sdl.Delay(uint32(1000 / 60))
+	}
 }
