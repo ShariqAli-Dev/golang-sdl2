@@ -11,7 +11,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 500
-	WindowTitle  = "Background"
+	WindowTitle  = "Changing Colors & Surface Icon"
 )
 
 type game struct {

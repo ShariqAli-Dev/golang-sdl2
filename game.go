@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand/v2"
 
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
@@ -23,6 +24,13 @@ func (g *game) init() error {
 	if err != nil {
 		return fmt.Errorf("error creating renderer: %v", err)
 	}
+
+	iconSurface, err := img.Load("./images/Go-logo.png")
+	if err != nil {
+		return fmt.Errorf("error loading the surface: %v", err)
+	}
+	defer iconSurface.Free()
+	g.window.SetIcon(iconSurface)
 
 	return err
 }
@@ -51,7 +59,10 @@ func (g *game) run() {
 					switch e.Keysym.Scancode {
 					case sdl.SCANCODE_ESCAPE:
 						return
+					case sdl.SCANCODE_SPACE:
+						g.randColor()
 					}
+
 				}
 			}
 		}
@@ -72,4 +83,8 @@ func (g *game) loadMedia() error {
 	}
 
 	return err
+}
+
+func (g *game) randColor() {
+	g.renderer.SetDrawColor(uint8(rand.IntN(256)), uint8(rand.IntN(256)), uint8(rand.IntN(256)), 255)
 }
