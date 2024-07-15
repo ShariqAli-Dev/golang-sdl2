@@ -1,4 +1,4 @@
 build:
-	@go build -o ./bin/game
+	@go build  -o game
 run: build
-	@./bin/game
+	@./game

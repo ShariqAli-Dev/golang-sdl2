@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 const (
 	WindowWidth  = 800
 	WindowHeight = 500
-	WindowTitle  = "Game"
+	WindowTitle  = "Background"
 )
 
 type game struct {
-	window   *sdl.Window
-	renderer *sdl.Renderer
+	window          *sdl.Window
+	renderer        *sdl.Renderer
+	backgroundImage *sdl.Texture
 }
 
 func main() {
@@ -30,14 +32,24 @@ func main() {
 		log.Fatalf(error.Error(err))
 	}
 
+	if err := game.loadMedia(); err != nil {
+		log.Fatalf(error.Error(err))
+	}
+
 	game.run()
 }
 
 func sdlInit() error {
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+	var err error
+
+	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		return fmt.Errorf("error initializing sdl2: %v", err)
 	}
-	return nil
+
+	if err = img.Init(img.INIT_PNG); err != nil {
+		return fmt.Errorf("error initializing sdl_image: %v", err)
+	}
+	return err
 }
 
 func sdlClose() {

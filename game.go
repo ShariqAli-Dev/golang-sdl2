@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -28,6 +29,9 @@ func (g *game) init() error {
 
 func (g *game) close() {
 	if g != nil {
+		g.backgroundImage.Destroy()
+		g.backgroundImage = nil
+
 		g.renderer.Destroy()
 		g.renderer = nil
 
@@ -51,8 +55,21 @@ func (g *game) run() {
 				}
 			}
 		}
+
 		g.renderer.Clear()
+		g.renderer.Copy(g.backgroundImage, nil, nil)
 		g.renderer.Present()
 		sdl.Delay(uint32(1000 / 60))
 	}
+}
+
+func (g *game) loadMedia() error {
+	var err error
+
+	g.backgroundImage, err = img.LoadTexture(g.renderer, "./images/background.png")
+	if err != nil {
+		return fmt.Errorf("error leading background texture: %v", err)
+	}
+
+	return err
 }
