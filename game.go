@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/veandco/go-sdl2/img"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -13,7 +14,7 @@ func newGame() *game {
 	game := game{
 		fontSize:     80,
 		fontColor:    sdl.Color{R: 255, B: 255, G: 255},
-		textVelocity: 6,
+		textVelocity: 3,
 		spriteVel:    5,
 	}
 	game.textXVelocity = game.textVelocity
@@ -48,6 +49,18 @@ func (g *game) init() error {
 
 func (g *game) close() {
 	if g != nil {
+		mix.HaltMusic()
+		mix.HaltChannel(-1)
+
+		g.music.Free()
+		g.music = nil
+
+		g.sdlSound.Free()
+		g.sdlSound = nil
+
+		g.goSound.Free()
+		g.goSound = nil
+
 		g.spriteImage.Destroy()
 		g.spriteImage = nil
 
@@ -78,6 +91,8 @@ func (g *game) run() {
 						return
 					case sdl.SCANCODE_SPACE:
 						g.randColor()
+					case sdl.SCANCODE_P:
+						g.pauseMusic()
 					}
 				}
 			}
@@ -134,11 +149,31 @@ func (g *game) loadMedia() error {
 		return fmt.Errorf("error querying texture: %v", err)
 	}
 
+	g.goSound, err = mix.LoadWAV("./sounds/Go.ogg")
+	if err != nil {
+		return fmt.Errorf("error loading goSound: %v", err)
+	}
+
+	g.sdlSound, err = mix.LoadWAV("./sounds/SDL.ogg")
+	if err != nil {
+		return fmt.Errorf("error loading sdlSound: %v", err)
+	}
+
+	g.music, err = mix.LoadMUS("./music/freesoftwaresong-8bit.ogg")
+	if err != nil {
+		return fmt.Errorf("error loading music: %v", err)
+	}
+
+	if err = g.music.Play(-1); err != nil {
+		return fmt.Errorf("error playing music: %v", err)
+	}
+
 	return err
 }
 
 func (g *game) randColor() {
 	g.renderer.SetDrawColor(uint8(rand.IntN(256)), uint8(rand.IntN(256)), uint8(rand.IntN(256)), 255)
+	g.goSound.Play(-1, 0)
 }
 
 func (g *game) updateText() {
@@ -147,14 +182,18 @@ func (g *game) updateText() {
 
 	if g.textRectangle.X < 0 {
 		g.textXVelocity = g.textVelocity
+		g.sdlSound.Play(-1, 0)
 	} else if (g.textRectangle.X + g.textRectangle.W) > WindowWidth {
 		g.textXVelocity = -g.textVelocity
+		g.sdlSound.Play(-1, 0)
 	}
 
 	if g.textRectangle.Y < 0 {
 		g.textYVelocity = g.textVelocity
+		g.sdlSound.Play(-1, 0)
 	} else if (g.textRectangle.Y + g.textRectangle.H) > WindowHeight {
 		g.textYVelocity = -g.textVelocity
+		g.sdlSound.Play(-1, 0)
 	}
 }
 
@@ -170,5 +209,13 @@ func (g *game) updateSprite() {
 	}
 	if g.keystate[sdl.SCANCODE_DOWN] == 1 || g.keystate[sdl.SCANCODE_S] == 1 {
 		g.spriteRectangle.Y += g.spriteVel
+	}
+}
+
+func (g *game) pauseMusic() {
+	if mix.PausedMusic() {
+		mix.ResumeMusic()
+	} else {
+		mix.PauseMusic()
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/veandco/go-sdl2/img"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -12,7 +13,7 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 500
-	WindowTitle  = "Player Sprite"
+	WindowTitle  = "Go Sound, Sdl Sound, & Music"
 )
 
 type game struct {
@@ -33,6 +34,9 @@ type game struct {
 	spriteVel       int32
 
 	keystate []uint8
+	goSound  *mix.Chunk
+	sdlSound *mix.Chunk
+	music    *mix.Music
 }
 
 func main() {
@@ -56,6 +60,8 @@ func main() {
 
 func sdlInit() error {
 	var err error
+	// can pipe in other flags
+	// var sdlFlags uint32 = sdl.INIT_EVENTS | sdl.INIT_something_else
 
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		return fmt.Errorf("error initializing sdl2: %v", err)
@@ -69,10 +75,20 @@ func sdlInit() error {
 		return fmt.Errorf("error initializing ttf: %v", err)
 	}
 
+	if err = mix.Init(mix.INIT_OGG); err != nil {
+		return fmt.Errorf("error initializing sdl mixer: %v", err)
+	}
+
+	if err = mix.OpenAudio(mix.DEFAULT_FREQUENCY, mix.DEFAULT_FORMAT, mix.DEFAULT_CHANNELS, mix.DEFAULT_CHUNKSIZE); err != nil {
+		return fmt.Errorf("error opening audio: %v", err)
+	}
+
 	return err
 }
 
 func sdlClose() {
+	mix.CloseAudio()
+	mix.Quit()
 	ttf.Quit()
 	img.Quit()
 	sdl.Quit()
