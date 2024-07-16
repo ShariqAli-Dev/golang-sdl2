@@ -14,6 +14,7 @@ func newGame() *game {
 		fontSize:     80,
 		fontColor:    sdl.Color{R: 255, B: 255, G: 255},
 		textVelocity: 6,
+		spriteVel:    5,
 	}
 	game.textXVelocity = game.textVelocity
 	game.textYVelocity = game.textVelocity
@@ -40,11 +41,16 @@ func (g *game) init() error {
 	defer iconSurface.Free()
 	g.window.SetIcon(iconSurface)
 
+	g.keystate = sdl.GetKeyboardState()
+
 	return err
 }
 
 func (g *game) close() {
 	if g != nil {
+		g.spriteImage.Destroy()
+		g.spriteImage = nil
+
 		g.textImage.Destroy()
 		g.textImage = nil
 
@@ -73,17 +79,18 @@ func (g *game) run() {
 					case sdl.SCANCODE_SPACE:
 						g.randColor()
 					}
-
 				}
 			}
 		}
 
 		g.updateText()
+		g.updateSprite()
 
 		g.renderer.Clear()
 
 		g.renderer.Copy(g.backgroundImage, nil, nil)
 		g.renderer.Copy(g.textImage, nil, &g.textRectangle)
+		g.renderer.Copy(g.spriteImage, nil, &g.spriteRectangle)
 
 		g.renderer.Present()
 		sdl.Delay(uint32(1000 / 60))
@@ -118,6 +125,15 @@ func (g *game) loadMedia() error {
 		return fmt.Errorf("error creating texture from surface: %v", err)
 	}
 
+	g.spriteImage, err = img.LoadTexture(g.renderer, "./images/Go-logo.png")
+	if err != nil {
+		return fmt.Errorf("error loading texture: %v", err)
+	}
+	_, _, g.spriteRectangle.W, g.spriteRectangle.H, err = g.spriteImage.Query()
+	if err != nil {
+		return fmt.Errorf("error querying texture: %v", err)
+	}
+
 	return err
 }
 
@@ -139,5 +155,20 @@ func (g *game) updateText() {
 		g.textYVelocity = g.textVelocity
 	} else if (g.textRectangle.Y + g.textRectangle.H) > WindowHeight {
 		g.textYVelocity = -g.textVelocity
+	}
+}
+
+func (g *game) updateSprite() {
+	if g.keystate[sdl.SCANCODE_LEFT] == 1 || g.keystate[sdl.SCANCODE_A] == 1 {
+		g.spriteRectangle.X -= g.spriteVel
+	}
+	if g.keystate[sdl.SCANCODE_RIGHT] == 1 || g.keystate[sdl.SCANCODE_D] == 1 {
+		g.spriteRectangle.X += g.spriteVel
+	}
+	if g.keystate[sdl.SCANCODE_UP] == 1 || g.keystate[sdl.SCANCODE_W] == 1 {
+		g.spriteRectangle.Y -= g.spriteVel
+	}
+	if g.keystate[sdl.SCANCODE_DOWN] == 1 || g.keystate[sdl.SCANCODE_S] == 1 {
+		g.spriteRectangle.Y += g.spriteVel
 	}
 }

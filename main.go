@@ -12,20 +12,27 @@ import (
 const (
 	WindowWidth  = 800
 	WindowHeight = 500
-	WindowTitle  = "Creating and Moving Text"
+	WindowTitle  = "Player Sprite"
 )
 
 type game struct {
 	window          *sdl.Window
 	renderer        *sdl.Renderer
 	backgroundImage *sdl.Texture
-	fontSize        int
-	fontColor       sdl.Color
-	textImage       *sdl.Texture
-	textVelocity    int32
-	textXVelocity   int32
-	textYVelocity   int32
-	textRectangle   sdl.Rect
+
+	fontSize      int
+	fontColor     sdl.Color
+	textImage     *sdl.Texture
+	textVelocity  int32
+	textXVelocity int32
+	textYVelocity int32
+	textRectangle sdl.Rect
+
+	spriteImage     *sdl.Texture
+	spriteRectangle sdl.Rect
+	spriteVel       int32
+
+	keystate []uint8
 }
 
 func main() {
